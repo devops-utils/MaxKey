@@ -1,8 +1,8 @@
 version: '3'
 services:
-  mysql:
+  maxkey-mysql:
     image: maxkey:mysql
-    container_name: mysql
+    container_name: maxkey-mysql
     build: ./docker-mysql
     volumes:
       - ./db/data:/var/lib/mysql
@@ -21,7 +21,7 @@ services:
     container_name: maxkey
     build: ./docker-maxkey
     environment:
-      - DATABASE_HOST:localhost
+      - DATABASE_HOST:maxkey-mysql
       - DATABASE_PORT:3306
       - DATABASE_NAME:maxkey
       - DATABASE_USER:root
@@ -34,7 +34,7 @@ services:
     container_name: maxkey-mgt
     build: ./docker-maxkey-mgt
     environment:
-      - DATABASE_HOST:localhost
+      - DATABASE_HOST:maxkey-mysql
       - DATABASE_PORT:3306
       - DATABASE_NAME:maxkey
       - DATABASE_USER:root
