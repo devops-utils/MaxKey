@@ -6,6 +6,7 @@ unzip gradle-7.2-bin.zip
 
 sudo docker-compose up --build -d
 
+sudo docker-compose up
 sudo docker-compose up -d
 sudo docker-compose down
 
