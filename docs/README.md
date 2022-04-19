@@ -32,6 +32,20 @@ maxkey
 127.0.0.1  oauth.demo.maxkey.top
 ```
 
+```shell
+iam
+ldap
+openldap
+ldap server
+phpldapadmin
+ldap admin
+freeipa
+
+https://www.cnblogs.com/franzlistan/p/12228623.html
+Appacheds
+https://directory.apache.org/apacheds/
+```
+
 ```
 ~/.gradle/wrapper/dists/gradle-7.2-bin/2dnblmf4td7x66yl1d74lt32g/gradle-7.2/bin/gradle --help
 
