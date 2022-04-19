@@ -5,10 +5,10 @@ services:
     container_name: mysql
     build: ./docker-mysql
     volumes:
-      - /root/mysql/data:/var/lib/mysql 
-      - /root/mysql/logs:/var/log/mysql 
-      - /root/docker-mysql:/etc/mysql/conf.d 
-      - /root/docker-mysql/sql:/docker-entrypoint-initdb.d 
+      - ./db/data:/var/lib/mysql
+      - ./db/logs:/var/log/mysql
+      - ./db/conf.d:/etc/mysql/conf.d
+      - ./db/sql:/docker-entrypoint-initdb.d
     environment:
       - MYSQL_ROOT_PASSWORD=maxkey
     ports:

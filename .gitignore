@@ -25,7 +25,6 @@ setEnvVars.bat
 # Log file
 *.log
 *.log.*
-**/logs/**
 
 */jdk/*
 
