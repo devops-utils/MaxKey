@@ -13,6 +13,19 @@ sudo docker-compose up -d
 sudo docker-compose down
 
 sudo docker-compose logs -f
+
+http://49.232.6.131:8072/maxkey-mgt/login
+admin
+maxkey
+
+https://49.232.6.131:8073/maxkey/login
+admin
+maxkey
+
+127.0.0.1  sso.maxkey.top
+127.0.0.1  tokenbased.demo.maxkey.top
+127.0.0.1  cas.demo.maxkey.top
+127.0.0.1  oauth.demo.maxkey.top
 ```
 
 ```
