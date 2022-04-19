@@ -1,5 +1,8 @@
 ```shell
 https://services.gradle.org/distributions/gradle-7.2-bin.zip
+
+unzip gradle-7.2-bin.zip
+~/git/gradle-7.2/bin/gradle build -x test
 ```
 
 ```
