@@ -22,6 +22,10 @@ https://49.232.6.131:8073/maxkey/login
 admin
 maxkey
 
+http://49.232.6.131:8074/login
+monitor
+maxkey
+
 127.0.0.1  sso.maxkey.top
 127.0.0.1  tokenbased.demo.maxkey.top
 127.0.0.1  cas.demo.maxkey.top
