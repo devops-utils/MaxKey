@@ -19,10 +19,20 @@ https://sso-test.7otech.com/maxkey-mgt/login
 admin
 maxkey
 
+test
+Sso@2022
+
 https://49.232.6.131:8073/maxkey/login
 https://sso-test.7otech.com/maxkey/login
 admin
 maxkey
+
+# cas服务端地址
+server-url-prefix: https://sso-test.7otech.com/maxkey/authz/cas/
+# cas服务端登陆地址
+server-login-url: https://sso-test.7otech.com/maxkey/authz/cas/login
+
+https://sso-test.7otech.com/maxkey/authz/cas/login?service=https%3A%2F%2Fsso-test.7otech.com%2Fmaxkey%2Fauthz%2Fcas%2F%2Fcore%2Fauth%2Fcas%2Flogin%2F%3Fnext%3D%252F
 
 http://49.232.6.131:8074/login
 monitor
