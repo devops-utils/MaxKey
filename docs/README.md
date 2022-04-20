@@ -15,10 +15,12 @@ sudo docker-compose down
 sudo docker-compose logs -f
 
 http://49.232.6.131:8072/maxkey-mgt/login
+https://sso-test.7otech.com/maxkey-mgt/login
 admin
 maxkey
 
 https://49.232.6.131:8073/maxkey/login
+https://sso-test.7otech.com/maxkey/login
 admin
 maxkey
 
