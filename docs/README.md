@@ -34,6 +34,8 @@ server-login-url: https://sso-test.7otech.com/maxkey/authz/cas/login
 
 https://sso-test.7otech.com/maxkey/authz/cas/login?service=https%3A%2F%2Fsso-test.7otech.com%2Fmaxkey%2Fauthz%2Fcas%2F%2Fcore%2Fauth%2Fcas%2Flogin%2F%3Fnext%3D%252F
 
+https://sso-test.7otech.com/maxkey/metadata/saml20/mxk_metadata_714217403415789568.xml
+
 http://49.232.6.131:8074/login
 monitor
 maxkey
