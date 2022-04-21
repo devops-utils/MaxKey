@@ -4,6 +4,8 @@ WORKDIR /home/sso
 COPY MaxKey-v3.3.3GA .
 COPY bin .
 
+RUN chmod +x *.sh
+
 ENV TZ=Asia/Shanghai \
     DATABASE_HOST=maxkey-mysql \
     DATABASE_PORT=3306 \
