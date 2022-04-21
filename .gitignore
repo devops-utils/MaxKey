@@ -7,9 +7,6 @@ classpath-data.json
 .myumldata
 setEnvVars.bat
 
-**/bin
-**/bin/**
-
 /.metadata
 */.metadata/*
 

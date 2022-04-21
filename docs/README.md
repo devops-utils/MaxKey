@@ -7,12 +7,16 @@ unzip gradle-7.2-bin.zip
 sudo docker-compose up --build -d
 
 sudo docker-compose build
+sudo docker-compose build maxkey
+sudo docker-compose build maxkey-mgt
 
 sudo docker-compose up
 sudo docker-compose up -d
 sudo docker-compose down
 
 sudo docker-compose logs -f
+
+sudo docker run -it --rm openjdk:8-jre bash
 
 http://49.232.6.131:8072/maxkey-mgt/login
 https://sso-test.7otech.com/maxkey-mgt/login
