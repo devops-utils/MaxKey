@@ -78,3 +78,47 @@
 <md:SingleSignOnService Binding="urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST-SimpleSign" Location="https://sso-test.7otech.com/maxkey/authz/saml20/714217403415789568"/>
 </md:IDPSSODescriptor>
 </md:EntityDescriptor>
+
+
+show create table mxk_apps\G
+*************************** 1. row ***************************
+       Table: mxk_apps
+Create Table: CREATE TABLE `mxk_apps` (
+  `ID` varchar(45) NOT NULL COMMENT '主键',
+  `NAME` varchar(300) NOT NULL COMMENT '应用名称',
+  `LOGINURL` varchar(300) CHARACTER SET cp850 COLLATE cp850_general_ci NOT NULL COMMENT '应用登录地址',
+  `CATEGORY` varchar(45) DEFAULT NULL COMMENT '应用类型',
+  `SECRET` varchar(400) DEFAULT NULL COMMENT '应用密钥',
+  `PROTOCOL` varchar(300) DEFAULT NULL COMMENT '单点登录协议',
+  `ICON` blob COMMENT '应用图标',
+  `STATUS` tinyint unsigned DEFAULT NULL COMMENT '状态',
+  `CREATEDBY` varchar(45) DEFAULT NULL COMMENT '创建人',
+  `CREATEDDATE` timestamp NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `MODIFIEDBY` varchar(45) DEFAULT NULL COMMENT '修改人',
+  `MODIFIEDDATE` datetime DEFAULT NULL COMMENT '修改时间',
+  `DESCRIPTION` varchar(400) DEFAULT NULL COMMENT '描述',
+  `VENDOR` varchar(45) DEFAULT NULL COMMENT '供应商',
+  `VENDORURL` varchar(200) DEFAULT NULL COMMENT '供应商地址',
+  `CREDENTIAL` tinyint DEFAULT '0' COMMENT '单点登录凭证类型',
+  `SHAREDUSERNAME` varchar(100) DEFAULT NULL COMMENT '共享用户名',
+  `SHAREDPASSWORD` varchar(400) DEFAULT NULL COMMENT '共享密码',
+  `SYSTEMUSERATTR` varchar(45) DEFAULT NULL COMMENT '系统用户属性',
+  `ISEXTENDATTR` varchar(4) DEFAULT NULL COMMENT '是否支持应用扩展属性',
+  `EXTENDATTR` varchar(4000) DEFAULT NULL COMMENT '应用扩展属性',
+  `SORTINDEX` int unsigned DEFAULT '0' COMMENT '排序序号',
+  `ISSIGNATURE` tinyint DEFAULT '0' COMMENT '签名状态',
+  `VISIBLE` tinyint DEFAULT '0' COMMENT '可见标识',
+  `ISADAPTER` tinyint unsigned DEFAULT '0' COMMENT '是否支持适配器',
+  `ADAPTERID` varchar(45) DEFAULT NULL,
+  `ADAPTERNAME` varchar(100) DEFAULT NULL,
+  `ADAPTER` varchar(500) DEFAULT NULL COMMENT '适配器',
+  `PRINCIPAL` varchar(45) DEFAULT NULL COMMENT '接口API用户',
+  `CREDENTIALS` varchar(200) DEFAULT NULL COMMENT '接口API用户凭证',
+  `USERPROPERTYS` varchar(4000) DEFAULT NULL COMMENT '接口返回用户属性定义',
+  `INDUCER` varchar(50) DEFAULT 'IDP' COMMENT '引导方式',
+  `LOGOUTURL` varchar(300) DEFAULT NULL COMMENT '注销地址',
+  `LOGOUTTYPE` int DEFAULT NULL COMMENT '单点注销方式 0 NONE,1 BACK_CHANNEL,2 FRONT_CHANNEL',
+  `INSTID` varchar(45) NOT NULL,
+  PRIMARY KEY (`ID`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COMMENT='应用表'
+1 row in set (0.00 sec)

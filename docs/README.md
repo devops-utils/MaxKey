@@ -39,6 +39,18 @@ https://sso-test.7otech.com/maxkey/login
 admin
 maxkey
 
+
+mysql -h172.21.16.11 -uroot -p -P3316
+maxkey
+use maxkey
+
+UPDATE mxk_apps
+JOIN (select icon from mxk_apps where name='Jira') a
+SET mxk_apps.icon = a.icon
+WHERE name='test';
+
+select icon from mxk_apps where name='test';
+
 # cas服务端地址
 server-url-prefix: https://sso-test.7otech.com/maxkey/authz/cas/
 # cas服务端登陆地址
