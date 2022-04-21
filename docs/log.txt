@@ -122,3 +122,48 @@ Create Table: CREATE TABLE `mxk_apps` (
   PRIMARY KEY (`ID`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COMMENT='应用表'
 1 row in set (0.00 sec)
+
+show tables;
++-------------------------------+
+| Tables_in_maxkey              |
++-------------------------------+
+| mxk_accounts                  |
+| mxk_accounts_strategy         |
+| mxk_apps                      |
+| mxk_apps_adapters             |
+| mxk_apps_cas_details          |
+| mxk_apps_form_based_details   |
+| mxk_apps_jwt_details          |
+| mxk_apps_oauth_client_details |
+| mxk_apps_saml_v20_details     |
+| mxk_apps_token_based_details  |
+| mxk_email_senders             |
+| mxk_group_member              |
+| mxk_group_privileges          |
+| mxk_groups                    |
+| mxk_history_connector         |
+| mxk_history_event             |
+| mxk_history_login             |
+| mxk_history_login_apps        |
+| mxk_history_logs              |
+| mxk_history_synchronizer      |
+| mxk_institutions              |
+| mxk_ldap_context              |
+| mxk_localization              |
+| mxk_notices                   |
+| mxk_organizations             |
+| mxk_organizations_cast        |
+| mxk_password_policy           |
+| mxk_register                  |
+| mxk_resources                 |
+| mxk_role_member               |
+| mxk_role_permissions          |
+| mxk_roles                     |
+| mxk_sms_provider              |
+| mxk_socials_associate         |
+| mxk_socials_provider          |
+| mxk_synchronizers             |
+| mxk_userinfo                  |
+| mxk_userinfo_adjunct          |
++-------------------------------+
+38 rows in set (0.00 sec)
