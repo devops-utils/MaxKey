@@ -11,4 +11,4 @@ ENV TZ=Asia/Shanghai \
     DATABASE_USER=root \
     DATABASE_PWD=maxkey
 
-ENTRYPOINT ["start_maxkey_mgt.sh"]
+ENTRYPOINT ["/home/sso/start_maxkey_mgt.sh"]

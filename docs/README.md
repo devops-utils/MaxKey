@@ -16,6 +16,10 @@ sudo docker-compose build maxkey-mgt
 
 sudo docker-compose up
 sudo docker-compose up -d
+
+sudo docker-compose up -d maxkey
+sudo docker-compose up -d maxkey-mgt
+
 sudo docker-compose down
 
 sudo docker-compose logs -f
