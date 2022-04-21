@@ -71,6 +71,10 @@ maxkey
 ```
 
 ```shell
+sudo yum install openldap
+```
+
+```shell
 iam
 ldap
 openldap
