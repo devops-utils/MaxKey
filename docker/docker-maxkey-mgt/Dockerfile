@@ -1,4 +1,4 @@
-FROM openjdk:8-jre
+FROM openjdk:8-jre-alpine
 
 WORKDIR /home/sso
 COPY MaxKey-v3.3.3GA .
