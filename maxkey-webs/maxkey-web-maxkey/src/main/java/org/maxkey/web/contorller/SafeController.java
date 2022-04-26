@@ -20,14 +20,11 @@ package org.maxkey.web.contorller;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.maxkey.authn.annotation.CurrentUser;
 import org.maxkey.constants.ConstsOperateMessage;
-import org.maxkey.constants.ConstsPasswordSetType;
 import org.maxkey.constants.ConstsTimeInterval;
-import org.maxkey.crypto.password.PasswordReciprocal;
 import org.maxkey.entity.UserInfo;
-import org.maxkey.persistence.repository.PasswordPolicyValidator;
 import org.maxkey.persistence.service.UserInfoService;
-import org.maxkey.util.StringUtils;
 import org.maxkey.web.WebConstants;
 import org.maxkey.web.WebContext;
 import org.maxkey.web.message.Message;
@@ -49,109 +46,10 @@ public class SafeController {
 	@Autowired
 	private UserInfoService userInfoService;
 	
-	@ResponseBody
-	@RequestMapping(value="/forward/changePasswod") 
-	public ModelAndView fowardChangePasswod() {
-			ModelAndView modelAndView=new ModelAndView("safe/changePassword");
-			modelAndView.addObject("model", WebContext.getUserInfo());
-			return modelAndView;
-	}
-	
-	@ResponseBody
-	@RequestMapping(value="/changePassword") 
-	public Message changePasswod(
-			@RequestParam(value ="oldPassword",required = true) String oldPassword,
-			@RequestParam("newPassword") String newPassword,
-			@RequestParam("confirmPassword") String confirmPassword) {
-		
-			if(userInfoService.changePassword(oldPassword,newPassword,confirmPassword,ConstsPasswordSetType.PASSWORD_NORMAL)) {
-				return  new Message(WebContext.getI18nValue(ConstsOperateMessage.UPDATE_SUCCESS),MessageType.success);
-			}else {
-				return  new Message(
-				        WebContext.getI18nValue(ConstsOperateMessage.UPDATE_ERROR)+"<br>"
-				        +WebContext.getAttribute(PasswordPolicyValidator.PASSWORD_POLICY_VALIDATE_RESULT),
-				        MessageType.error);
-			}	
-	}
-
-	@RequestMapping(value="/changeExpiredPassword") 
-	public ModelAndView changeExpiredPassword(
-			@RequestParam(value ="oldPassword" ,required = false) String oldPassword,
-			@RequestParam(value ="newPassword",required = false) String newPassword,
-			@RequestParam(value ="confirmPassword",required = false) String confirmPassword) {
-			ModelAndView modelAndView=new ModelAndView("passwordExpired");
-	        if(newPassword ==null ||newPassword.equals("")) {
-	            
-	        }else if(userInfoService.changePassword(oldPassword,newPassword,confirmPassword,ConstsPasswordSetType.PASSWORD_NORMAL)){
-	            WebContext.getSession().setAttribute(WebConstants.CURRENT_USER_PASSWORD_SET_TYPE,ConstsPasswordSetType.PASSWORD_NORMAL);
-				return WebContext.redirect("/index");
-			}
-	        
-			Object errorMessage=WebContext.getAttribute(PasswordPolicyValidator.PASSWORD_POLICY_VALIDATE_RESULT);
-			UserInfo userInfo=WebContext.getUserInfo();
-            modelAndView.addObject("model", userInfo);
-            modelAndView.addObject("errorMessage", errorMessage==null?"":errorMessage);
-			return modelAndView;
-	}
-	
-	
-	@RequestMapping(value="/changeInitPassword") 
-	public ModelAndView changeInitPassword(
-			@RequestParam(value ="oldPassword",required = false) String oldPassword,
-			@RequestParam(value ="newPassword",required = false) String newPassword,
-			@RequestParam(value ="confirmPassword",required = false) String confirmPassword) {
-		ModelAndView modelAndView=new ModelAndView("passwordInitial");
-        if(newPassword ==null ||newPassword.equals("")) {
-            
-        }else if(userInfoService.changePassword(oldPassword,newPassword,confirmPassword,ConstsPasswordSetType.PASSWORD_NORMAL)){
-            WebContext.getSession().setAttribute(WebConstants.CURRENT_USER_PASSWORD_SET_TYPE,ConstsPasswordSetType.PASSWORD_NORMAL);
-			return WebContext.redirect("/index");
-		}
-		
-        Object errorMessage=WebContext.getAttribute(PasswordPolicyValidator.PASSWORD_POLICY_VALIDATE_RESULT);
-        modelAndView.addObject("errorMessage", errorMessage==null?"":errorMessage);
-        UserInfo userInfo=WebContext.getUserInfo();
-        modelAndView.addObject("model", userInfo);
-        return modelAndView;
-	}
-	
-
-	@ResponseBody
-	@RequestMapping(value="/forward/changeAppLoginPasswod") 
-	public ModelAndView fowardChangeAppLoginPasswod() {
-			ModelAndView modelAndView=new ModelAndView("safe/changeAppLoginPasswod");
-			modelAndView.addObject("model", WebContext.getUserInfo());
-			return modelAndView;
-	}
-	
-	@ResponseBody
-	@RequestMapping(value="/changeAppLoginPasswod") 
-	public Message changeAppLoginPasswod(
-			@RequestParam("oldPassword") String oldPassword,
-			@RequestParam("newPassword") String newPassword,
-			@RequestParam("confirmPassword") String confirmPassword) {
-		
-		UserInfo userInfo =WebContext.getUserInfo();
-		_logger.debug("App Login Password : "+userInfo.getAppLoginPassword());
-		_logger.debug("App Login new Password : "+PasswordReciprocal.getInstance().encode(newPassword));
-		if(newPassword.equals(confirmPassword)){
-			if(StringUtils.isEmpty(userInfo.getAppLoginPassword())||userInfo.getAppLoginPassword().equals(PasswordReciprocal.getInstance().encode(oldPassword))){
-				userInfo.setAppLoginPassword(PasswordReciprocal.getInstance().encode(newPassword));
-				boolean change= userInfoService.updateAppLoginPassword(userInfo);
-				_logger.debug(""+change);
-				return  new Message(WebContext.getI18nValue(ConstsOperateMessage.UPDATE_SUCCESS),MessageType.prompt);
-			}
-		}
-		
-		return  new Message(WebContext.getI18nValue(ConstsOperateMessage.UPDATE_ERROR),MessageType.error);
-		
-	}
-	
-	
 	@RequestMapping(value="/forward/setting") 
-	public ModelAndView fowardSetting() {
+	public ModelAndView fowardSetting(@CurrentUser UserInfo currentUser) {
 			ModelAndView modelAndView=new ModelAndView("safe/setting");
-			modelAndView.addObject("model", WebContext.getUserInfo());
+			modelAndView.addObject("model", currentUser);
 			return modelAndView;
 	}
 	
@@ -165,24 +63,25 @@ public class SafeController {
 			@RequestParam("mobileVerify") String mobileVerify,
 			@RequestParam("email") String email,
 			@RequestParam("emailVerify") String emailVerify,
-			@RequestParam("theme") String theme) {
-		UserInfo userInfo =WebContext.getUserInfo();
-		userInfo.setAuthnType(Integer.parseInt(authnType));
-		userInfoService.updateAuthnType(userInfo);
+			@RequestParam("theme") String theme,
+			@CurrentUser UserInfo currentUser) {
+		currentUser.setAuthnType(Integer.parseInt(authnType));
+		userInfoService.updateAuthnType(currentUser);
 		
-		userInfo.setMobile(mobile);
-		userInfoService.updateMobile(userInfo);
+		currentUser.setMobile(mobile);
+		userInfoService.updateMobile(currentUser);
 		
-		userInfo.setEmail(email);
+		currentUser.setEmail(email);
 
-        userInfo.setTheme(theme);
+		currentUser.setTheme(theme);
         WebContext.setCookie(response,null, WebConstants.THEME_COOKIE_NAME, theme, ConstsTimeInterval.ONE_WEEK);
         
-		userInfoService.updateEmail(userInfo);
+		userInfoService.updateEmail(currentUser);
 		
 		
 		return  new Message(WebContext.getI18nValue(ConstsOperateMessage.UPDATE_SUCCESS),MessageType.success);
 		
 	}
+	
 	
 }

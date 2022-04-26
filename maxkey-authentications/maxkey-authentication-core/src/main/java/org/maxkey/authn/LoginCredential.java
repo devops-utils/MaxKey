@@ -30,9 +30,10 @@ public class LoginCredential  implements Authentication {
      * 
      */
     private static final long serialVersionUID = 3125709257481600320L;
+    String congress;
     String username;
     String password;
-    String sessionId;
+    String state;
     String captcha;
     String otpCaptcha;
     String remeberMe;
@@ -64,7 +65,15 @@ public class LoginCredential  implements Authentication {
         this.authType = authType;
     }
     
-    @Override
+    public String getCongress() {
+		return congress;
+	}
+
+	public void setCongress(String congress) {
+		this.congress = congress;
+	}
+
+	@Override
     public String getName() {
         return "Login Credential";
     }
@@ -117,15 +126,15 @@ public class LoginCredential  implements Authentication {
         this.password = password;
     }
 
-    public String getSessionId() {
-        return sessionId;
-    }
+    public String getState() {
+		return state;
+	}
 
-    public void setSessionId(String sessionId) {
-        this.sessionId = sessionId;
-    }
+	public void setState(String state) {
+		this.state = state;
+	}
 
-    public String getCaptcha() {
+	public String getCaptcha() {
         return captcha;
     }
 
@@ -224,12 +233,14 @@ public class LoginCredential  implements Authentication {
 	@Override
 	public String toString() {
 		StringBuilder builder = new StringBuilder();
-		builder.append("LoginCredential [username=");
+		builder.append("LoginCredential [congress=");
+		builder.append(congress);
+		builder.append(", username=");
 		builder.append(username);
 		builder.append(", password=");
-		builder.append("******");
-		builder.append(", sessionId=");
-		builder.append(sessionId);
+		builder.append(password);
+		builder.append(", state=");
+		builder.append(state);
 		builder.append(", captcha=");
 		builder.append(captcha);
 		builder.append(", otpCaptcha=");

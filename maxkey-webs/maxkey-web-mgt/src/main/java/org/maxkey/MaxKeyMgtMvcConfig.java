@@ -1,5 +1,5 @@
 /*
- * Copyright [2020] [MaxKey of copyright http://www.maxkey.top]
+ * Copyright [2022] [MaxKey of copyright http://www.maxkey.top]
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,25 +17,26 @@
 
 package org.maxkey;
 
+import java.util.List;
+
 import org.maxkey.authn.AbstractAuthenticationProvider;
 import org.maxkey.authn.support.jwt.HttpJwtEntryPoint;
 import org.maxkey.authn.support.jwt.JwtLoginService;
-import org.maxkey.authn.support.rememberme.AbstractRemeberMeService;
-import org.maxkey.authn.support.rememberme.HttpRemeberMeEntryPoint;
+import org.maxkey.authn.web.CurrentUserMethodArgumentResolver;
+import org.maxkey.authn.web.interceptor.PermissionInterceptor;
 import org.maxkey.configuration.ApplicationConfig;
 import org.maxkey.web.interceptor.HistoryLogsAdapter;
-import org.maxkey.web.interceptor.PermissionAdapter;
 import org.maxkey.web.interceptor.RestApiPermissionAdapter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
-import org.springframework.web.servlet.i18n.LocaleChangeInterceptor;
+import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 
 @Configuration
 @EnableWebMvc
@@ -43,29 +44,19 @@ public class MaxKeyMgtMvcConfig implements WebMvcConfigurer {
     private static final  Logger _logger = LoggerFactory.getLogger(MaxKeyMgtMvcConfig.class);
     
     @Autowired
-  	@Qualifier("applicationConfig")
   	ApplicationConfig applicationConfig;
     
     @Autowired
-    @Qualifier("authenticationProvider")
     AbstractAuthenticationProvider authenticationProvider ;
     
     @Autowired
-	@Qualifier("remeberMeService")
-	AbstractRemeberMeService remeberMeService;
-    
-    @Autowired
-   	@Qualifier("jwtLoginService")
     JwtLoginService jwtLoginService;
     
     @Autowired
-    PermissionAdapter permissionAdapter;
+    PermissionInterceptor permissionInterceptor;
     
     @Autowired
     HistoryLogsAdapter historyLogsAdapter;
-    
-    @Autowired
-    LocaleChangeInterceptor localeChangeInterceptor;
     
     @Autowired
     RestApiPermissionAdapter restApiPermissionAdapter;
@@ -98,43 +89,37 @@ public class MaxKeyMgtMvcConfig implements WebMvcConfigurer {
     public void addInterceptors(InterceptorRegistry registry) {
         //addPathPatterns 用于添加拦截规则 ， 先把所有路径都加入拦截， 再一个个排除
         //excludePathPatterns 表示改路径不用拦截
-    	
-    	_logger.debug("add HttpRemeberMeEntryPoint");
-        registry.addInterceptor(new HttpRemeberMeEntryPoint(
-        			authenticationProvider,remeberMeService,applicationConfig,true))
-        		.addPathPatterns("/login");
-        
         _logger.debug("add HttpJwtEntryPoint");
         registry.addInterceptor(new HttpJwtEntryPoint(
         		authenticationProvider,jwtLoginService,applicationConfig,true))
         	.addPathPatterns("/login");
         
-        registry.addInterceptor(permissionAdapter)
-                .addPathPatterns("/main/**")
+        permissionInterceptor.setMgmt(true);
+        
+        registry.addInterceptor(permissionInterceptor)
+                .addPathPatterns("/dashboard/**")
                 .addPathPatterns("/orgs/**")
-                .addPathPatterns("/userinfo/**")
+                .addPathPatterns("/users/**")
                 .addPathPatterns("/apps/**")
-                .addPathPatterns("/app/accounts/**")
-                .addPathPatterns("/groups/**")
-                .addPathPatterns("/groupMember/**")
-                .addPathPatterns("/groupPrivileges/**")
-                .addPathPatterns("/roles/**")
-                .addPathPatterns("/rolemembers/**")
-                .addPathPatterns("/resources/**")
+                .addPathPatterns("/accounts/**")
+                
+                
+                .addPathPatterns("/access/**")
+                .addPathPatterns("/access/**/**")
+                
                 .addPathPatterns("/permissions/**")
+                .addPathPatterns("/permissions/**/**")
+                
                 .addPathPatterns("/config/**")
-                .addPathPatterns("/logs/**")
+                .addPathPatterns("/config/**/**")
+                
                 .addPathPatterns("/historys/**")
                 .addPathPatterns("/historys/**/**")
-                .addPathPatterns("/session/**")
-                .addPathPatterns("/socialsprovider/**")
-                .addPathPatterns("/accountsstrategy/**")
+                
                 .addPathPatterns("/institutions/**")
                 .addPathPatterns("/localization/**")
-                .addPathPatterns("/ldapcontext/**")
-                .addPathPatterns("/emailsenders/**")
-                .addPathPatterns("/smsprovider/**")
-                .addPathPatterns("/synchronizers/**")
+                
+                .addPathPatterns("/file/upload/")
                 
                 ;
         
@@ -153,10 +138,6 @@ public class MaxKeyMgtMvcConfig implements WebMvcConfigurer {
                 ;
         _logger.debug("add HistoryLogsAdapter");
         
-        registry.addInterceptor(localeChangeInterceptor);
-        _logger.debug("add LocaleChangeInterceptor");
-        
-        
         /*
          * api
          * idm
@@ -170,6 +151,16 @@ public class MaxKeyMgtMvcConfig implements WebMvcConfigurer {
 		
         _logger.debug("add RestApiPermissionAdapter");
         
+    }
+    
+    @Override
+    public void addArgumentResolvers(List<HandlerMethodArgumentResolver> argumentResolvers) {
+        argumentResolvers.add(currentUserMethodArgumentResolver());
+    }
+    
+    @Bean
+    public CurrentUserMethodArgumentResolver currentUserMethodArgumentResolver() {
+        return new CurrentUserMethodArgumentResolver();
     }
 
 }

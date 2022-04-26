@@ -1,5 +1,5 @@
 /*
- * Copyright [2020] [MaxKey of copyright http://www.maxkey.top]
+ * Copyright [2022] [MaxKey of copyright http://www.maxkey.top]
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,18 +18,26 @@
 package org.maxkey.autoconfigure;
 
 import org.maxkey.authn.AbstractAuthenticationProvider;
-import org.maxkey.authn.RealmAuthenticationProvider;
 import org.maxkey.authn.SavedRequestAwareAuthenticationSuccessHandler;
-import org.maxkey.authn.online.OnlineTicketServices;
-import org.maxkey.authn.online.OnlineTicketServicesFactory;
+import org.maxkey.authn.jwt.AuthJwtService;
+import org.maxkey.authn.jwt.CongressService;
+import org.maxkey.authn.jwt.InMemoryCongressService;
+import org.maxkey.authn.jwt.RedisCongressService;
+import org.maxkey.authn.online.OnlineTicketService;
+import org.maxkey.authn.online.OnlineTicketServiceFactory;
+import org.maxkey.authn.provider.AuthenticationProviderFactory;
+import org.maxkey.authn.provider.MobileAuthenticationProvider;
+import org.maxkey.authn.provider.NormalAuthenticationProvider;
+import org.maxkey.authn.provider.TrustedAuthenticationProvider;
 import org.maxkey.authn.realm.AbstractAuthenticationRealm;
-import org.maxkey.authn.support.rememberme.AbstractRemeberMeService;
-import org.maxkey.authn.support.rememberme.RemeberMeServiceFactory;
+import org.maxkey.authn.web.SessionListenerAdapter;
 import org.maxkey.configuration.ApplicationConfig;
+import org.maxkey.configuration.AuthJwkConfig;
 import org.maxkey.constants.ConstsPersistence;
 import org.maxkey.password.onetimepwd.AbstractOtpAuthn;
 import org.maxkey.password.onetimepwd.OtpAuthnService;
 import org.maxkey.password.onetimepwd.token.RedisOtpTokenStore;
+import org.maxkey.persistence.MomentaryService;
 import org.maxkey.persistence.redis.RedisConnectionFactory;
 import org.maxkey.persistence.repository.LoginHistoryRepository;
 import org.maxkey.persistence.repository.LoginRepository;
@@ -44,6 +52,8 @@ import org.springframework.context.MessageSource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.jdbc.core.JdbcTemplate;
+
+import com.nimbusds.jose.JOSEException;
 
 
 @Configuration
@@ -60,24 +70,80 @@ public class AuthenticationAutoConfiguration  implements InitializingBean {
     
     @Bean(name = "authenticationProvider")
     public AbstractAuthenticationProvider authenticationProvider(
+    		AbstractAuthenticationProvider normalAuthenticationProvider,
+    		AbstractAuthenticationProvider mobileAuthenticationProvider,
+    		AbstractAuthenticationProvider trustedAuthenticationProvider
+    		) {
+    	AuthenticationProviderFactory authenticationProvider = new AuthenticationProviderFactory();
+    	authenticationProvider.addAuthenticationProvider(normalAuthenticationProvider);
+    	authenticationProvider.addAuthenticationProvider(mobileAuthenticationProvider);
+    	authenticationProvider.addAuthenticationProvider(trustedAuthenticationProvider);
+    	
+    	return authenticationProvider;
+    }
+    		
+    @Bean
+    public AbstractAuthenticationProvider normalAuthenticationProvider(
     		AbstractAuthenticationRealm authenticationRealm,
     		ApplicationConfig applicationConfig,
-    	    AbstractOtpAuthn tfaOtpAuthn,
-    	    OtpAuthnService otpAuthnService,
-    	    AbstractRemeberMeService remeberMeService,
-    	    OnlineTicketServices onlineTicketServices
+    	    OnlineTicketService onlineTicketServices,
+    	    AuthJwtService authJwtService
     		) {
-       
     	_logger.debug("init authentication Provider .");
-        return new RealmAuthenticationProvider(
+    	return new NormalAuthenticationProvider(
         		authenticationRealm,
         		applicationConfig,
-        		tfaOtpAuthn,
+        		onlineTicketServices,
+        		authJwtService
+        	);
+    }
+    
+    @Bean(name = "mobileAuthenticationProvider")
+    public AbstractAuthenticationProvider mobileAuthenticationProvider(
+    		AbstractAuthenticationRealm authenticationRealm,
+    		ApplicationConfig applicationConfig,
+    	    OtpAuthnService otpAuthnService,
+    	    OnlineTicketService onlineTicketServices
+    		) {
+    	_logger.debug("init Mobile authentication Provider .");
+    	return new MobileAuthenticationProvider(
+        		authenticationRealm,
+        		applicationConfig,
         		otpAuthnService,
-        		remeberMeService,
         		onlineTicketServices
-        		);
-        
+        	);
+    }
+
+    @Bean(name = "trustedAuthenticationProvider")
+    public AbstractAuthenticationProvider trustedAuthenticationProvider(
+    		AbstractAuthenticationRealm authenticationRealm,
+    		ApplicationConfig applicationConfig,
+    	    OnlineTicketService onlineTicketServices
+    		) {
+    	_logger.debug("init Mobile authentication Provider .");
+    	return new TrustedAuthenticationProvider(
+        		authenticationRealm,
+        		applicationConfig,
+        		onlineTicketServices
+        	);
+    }
+    
+    @Bean(name = "authJwtService")
+    public AuthJwtService authJwtService(
+    		AuthJwkConfig authJwkConfig,
+    		RedisConnectionFactory redisConnFactory,
+    		MomentaryService  momentaryService,
+    		@Value("${maxkey.server.persistence}") int persistence) throws JOSEException {
+    	CongressService congressService;
+    	if (persistence == ConstsPersistence.REDIS) {
+    		congressService = new RedisCongressService(redisConnFactory);
+    	}else {
+    		congressService = new InMemoryCongressService();
+    	}
+    	
+    	AuthJwtService authJwtService = new AuthJwtService(authJwkConfig,congressService,momentaryService);
+    	
+    	return authJwtService;
     }
     
     @Bean(name = "otpAuthnService")
@@ -114,31 +180,24 @@ public class AuthenticationAutoConfiguration  implements InitializingBean {
         return new LoginHistoryRepository(jdbcTemplate);
     }
     
-    /**
-     * remeberMeService .
-     * @return
-     */
-    @Bean(name = "remeberMeService")
-    public AbstractRemeberMeService remeberMeService(
-            @Value("${maxkey.server.persistence}") int persistence,
-            @Value("${maxkey.login.remeberme.validity}") int validity,
-            JdbcTemplate jdbcTemplate,
-            RedisConnectionFactory redisConnFactory) {
-        return new RemeberMeServiceFactory().getService(persistence, jdbcTemplate, redisConnFactory);
-    }
     
-    @Bean(name = "onlineTicketServices")
-    public OnlineTicketServices onlineTicketServices(
+    @Bean(name = "onlineTicketService")
+    public OnlineTicketService onlineTicketService(
             @Value("${maxkey.server.persistence}") int persistence,
             JdbcTemplate jdbcTemplate,
             RedisConnectionFactory redisConnFactory,
             @Value("${server.servlet.session.timeout:1800}") int timeout
             ) {
-        OnlineTicketServices  onlineTicketServices  = 
-                new OnlineTicketServicesFactory().getService(persistence, jdbcTemplate, redisConnFactory);
-        onlineTicketServices.setValiditySeconds(timeout);
+        OnlineTicketService  onlineTicketService  = 
+                new OnlineTicketServiceFactory().getService(persistence, jdbcTemplate, redisConnFactory);
+        onlineTicketService.setValiditySeconds(timeout);
         _logger.trace("onlineTicket timeout " + timeout);
-        return onlineTicketServices;
+        return onlineTicketService;
+    }
+    
+    @Bean(name = "sessionListenerAdapter")
+    public SessionListenerAdapter sessionListenerAdapter() {
+        return new SessionListenerAdapter();
     }
     
     @Override

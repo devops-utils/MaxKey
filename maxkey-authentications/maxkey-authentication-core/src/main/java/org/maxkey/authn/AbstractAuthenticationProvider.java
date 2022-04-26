@@ -1,5 +1,5 @@
 /*
- * Copyright [2020] [MaxKey of copyright http://www.maxkey.top]
+ * Copyright [2022] [MaxKey of copyright http://www.maxkey.top]
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,11 +18,12 @@
 package org.maxkey.authn;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 
-import org.maxkey.authn.online.OnlineTicketServices;
+import org.maxkey.authn.jwt.AuthJwtService;
+import org.maxkey.authn.online.OnlineTicket;
+import org.maxkey.authn.online.OnlineTicketService;
 import org.maxkey.authn.realm.AbstractAuthenticationRealm;
-import org.maxkey.authn.support.rememberme.AbstractRemeberMeService;
+import org.maxkey.authn.web.AuthorizationUtils;
 import org.maxkey.configuration.ApplicationConfig;
 import org.maxkey.constants.ConstsLoginType;
 import org.maxkey.constants.ConstsStatus;
@@ -36,9 +37,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.web.authentication.WebAuthenticationDetails;
 /**
  * login Authentication abstract class.
  * 
@@ -49,11 +50,15 @@ public abstract class AbstractAuthenticationProvider {
     private static final Logger _logger = 
             LoggerFactory.getLogger(AbstractAuthenticationProvider.class);
 
+    public static String PROVIDER_SUFFIX = "AuthenticationProvider";
+    
     public class AuthType{
     	public final static String NORMAL 	= "normal";
     	public final static String TFA 		= "tfa";
     	public final static String MOBILE 	= "mobile";
+    	public final static String TRUSTED 	= "trusted";
     }
+    
     protected ApplicationConfig applicationConfig;
 
     protected AbstractAuthenticationRealm authenticationRealm;
@@ -62,9 +67,9 @@ public abstract class AbstractAuthenticationProvider {
     
     protected OtpAuthnService otpAuthnService;
 
-    protected AbstractRemeberMeService remeberMeService;
+    protected OnlineTicketService onlineTicketServices;
     
-    protected OnlineTicketServices onlineTicketServices;
+    protected AuthJwtService authJwtService;
     
     public static  ArrayList<GrantedAuthority> grantedAdministratorsAuthoritys = new ArrayList<GrantedAuthority>();
     
@@ -72,198 +77,74 @@ public abstract class AbstractAuthenticationProvider {
         grantedAdministratorsAuthoritys.add(new SimpleGrantedAuthority("ROLE_ADMINISTRATORS"));
     }
 
-    protected abstract String getProviderName();
+    public abstract String getProviderName();
 
-    protected abstract Authentication doInternalAuthenticate(LoginCredential authentication);
-    
-    public    abstract Authentication authentication(LoginCredential loginCredential,boolean isTrusted);
+    public abstract Authentication doAuthenticate(LoginCredential authentication);
     
     @SuppressWarnings("rawtypes")
     public boolean supports(Class authentication) {
         return (UsernamePasswordAuthenticationToken.class.isAssignableFrom(authentication));
     }
 
-    /**
-     * authenticate .
-     * 
-     */
-    public Authentication authenticate(LoginCredential loginCredential) 
-            throws AuthenticationException {
-        _logger.debug("Trying to authenticate user '{}' via {}", 
-                loginCredential.getPrincipal(), getProviderName());
-        // 登录SESSION
-        _logger.debug("Login  Session {}.", WebContext.getSession().getId());
-        Authentication authentication = null;
-        try {
-            authentication = doInternalAuthenticate(loginCredential);
-        } catch (AuthenticationException e) {
-            _logger.error("Failed to authenticate user {} via {}: {}",
-                    new Object[] {  loginCredential.getPrincipal(),
-                                    getProviderName(),
-                                    e.getMessage() });
-            WebContext.setAttribute(
-                    WebConstants.LOGIN_ERROR_SESSION_MESSAGE, e.getMessage());
-        } catch (Exception e) {
-            _logger.error("Login error Unexpected exception in {} authentication:\n{}" ,
-                            getProviderName(), e.getMessage());
-        }
-        
-        if (authentication== null || !authentication.isAuthenticated()) {
-            return authentication;
-        }
-
-        // user authenticated
-        _logger.debug("'{}' authenticated successfully by {}.", 
-                authentication.getPrincipal(), getProviderName());
-        
-        changeSession(authentication);
-        
-        authenticationRealm.insertLoginHistory( WebContext.getUserInfo(), 
-						        				ConstsLoginType.LOCAL, 
-								                "", 
-								                "xe00000004", 
-								                WebConstants.LOGIN_RESULT.SUCCESS);
-        
-        return authentication;
+    public Authentication authenticate(LoginCredential authentication){
+    	return null;
     }
     
-    protected void changeSession(Authentication authentication) {
-        
-        HashMap<String,Object> sessionAttributeMap = new HashMap<String,Object>();
-        for(String attributeName : WebContext.sessionAttributeNameList) {
-            sessionAttributeMap.put(attributeName, WebContext.getAttribute(attributeName));
-            WebContext.removeAttribute(attributeName);
-        }
-        
-        //new Session        
-        WebContext.getSession().invalidate();
-        
-        for(String attributeName : WebContext.sessionAttributeNameList) {
-            WebContext.setAttribute(attributeName, sessionAttributeMap.get(attributeName));
-        }
-        
-        _logger.debug("Login Success Session {} Mapping to user Session {}.",
-                        WebContext.getSession().getId(),
-                        WebContext.getAttribute(WebConstants.CURRENT_USER_SESSION_ID));
+    public Authentication authenticate(LoginCredential authentication,boolean trusted) {
+    	return null;
     }
-   
-
+    
     /**
-     * session validate.
-     * 
-     * @param sessionId String
+     * createOnlineSession 
+     * @param credential
+     * @param userInfo
+     * @return
      */
-    protected void sessionValid(String sessionId) {
-        if (sessionId == null || !sessionId.equals(WebContext.getSession().getId())) {
-            _logger.debug("login session valid error.");
-            _logger.debug("login session sessionId " + sessionId);
-            _logger.debug("login getSession sessionId " + WebContext.getSession().getId());
-            
-            String message = WebContext.getI18nValue("login.error.session");
-            throw new BadCredentialsException(message);
+    public UsernamePasswordAuthenticationToken createOnlineTicket(LoginCredential credential,UserInfo userInfo) {
+        //Online Tickit
+        OnlineTicket onlineTicket = new OnlineTicket();
+
+        userInfo.setOnlineTicket(onlineTicket.getTicketId());
+        
+        SigninPrincipal principal = new SigninPrincipal(userInfo);
+        //set OnlineTicket
+        principal.setOnlineTicket(onlineTicket);
+        ArrayList<GrantedAuthority> grantedAuthoritys = authenticationRealm.grantAuthority(userInfo);
+        principal.setAuthenticated(true);
+        
+        for(GrantedAuthority administratorsAuthority : grantedAdministratorsAuthoritys) {
+            if(grantedAuthoritys.contains(administratorsAuthority)) {
+            	principal.setRoleAdministrators(true);
+                _logger.trace("ROLE ADMINISTRATORS Authentication .");
+            }
         }
-    }
-
-    /**
-     * session validate.
-     * 
-     * @param jwtToken String
-     */
-    protected void jwtTokenValid(String jwtToken) {
+        _logger.debug("Granted Authority {}" , grantedAuthoritys);
+        
+        principal.setGrantedAuthorityApps(authenticationRealm.queryAuthorizedApps(grantedAuthoritys));
+        
+        UsernamePasswordAuthenticationToken authenticationToken =
+                new UsernamePasswordAuthenticationToken(
+                		principal, 
+                        "PASSWORD", 
+                        grantedAuthoritys
+                );
+        
+        authenticationToken.setDetails(
+                new WebAuthenticationDetails(WebContext.getRequest()));
+        
+        onlineTicket.setAuthentication(authenticationToken);
+        
+        //store onlineTicket
+        this.onlineTicketServices.store(onlineTicket.getTicketId(), onlineTicket);
+        
         /*
-         * if(jwtToken!=null && ! jwtToken.equals("")){
-         * if(jwtLoginService.jwtTokenValidation(j_jwtToken)){ return; } }
+         *  put Authentication to current session context
          */
-        String message = WebContext.getI18nValue("login.error.session");
-        _logger.debug("login session valid error.");
-        throw new BadCredentialsException(message);
-    }
-
-    protected void authTypeValid(String authType) {
-        _logger.debug("Login AuthN Type  " + authType);
-        if (authType != null && (
-                authType.equalsIgnoreCase(AuthType.NORMAL) 
-                || authType.equalsIgnoreCase(AuthType.TFA)
-                || authType.equalsIgnoreCase(AuthType.MOBILE)
-        		)
-            ) {
-            return;
-        }
-        
-        final   String message = WebContext.getI18nValue("login.error.authtype");
-        _logger.debug("Login AuthN type must eq basic or tfa ， Error message is {}" , message);
-        throw new BadCredentialsException(message);
-    }
-
-    /**
-     * captcha validate .
-     * 
-     * @param authType String
-     * @param captcha String
-     */
-    protected void captchaValid(String captcha, String authType) {
-        // for basic
-        if (authType.equalsIgnoreCase(AuthType.NORMAL)) {
-            _logger.info("captcha : "
-                    + WebContext.getSession().getAttribute(
-                            WebConstants.KAPTCHA_SESSION_KEY).toString());
-            if (captcha == null || !captcha
-                    .equals(WebContext.getSession().getAttribute(
-                                    WebConstants.KAPTCHA_SESSION_KEY).toString())) {
-                String message = WebContext.getI18nValue("login.error.captcha");
-                _logger.debug("login captcha valid error.");
-                throw new BadCredentialsException(message);
-            }
-        }
-    }
-
-    /**
-     * captcha validate.
-     * 
-     * @param otpCaptcha String
-     * @param authType   String
-     * @param userInfo   UserInfo
-     */
-    protected void tftcaptchaValid(String otpCaptcha, String authType, UserInfo userInfo) {
-        // for one time password 2 factor
-        if (applicationConfig.getLoginConfig().isMfa() 
-        		&& authType.equalsIgnoreCase(AuthType.TFA)) {
-            UserInfo validUserInfo = new UserInfo();
-            validUserInfo.setUsername(userInfo.getUsername());
-            validUserInfo.setSharedSecret(userInfo.getSharedSecret());
-            validUserInfo.setSharedCounter(userInfo.getSharedCounter());
-            validUserInfo.setId(userInfo.getId());
-            if (otpCaptcha == null || !tfaOtpAuthn.validate(validUserInfo, otpCaptcha)) {
-                String message = WebContext.getI18nValue("login.error.captcha");
-                _logger.debug("login captcha valid error.");
-                throw new BadCredentialsException(message);
-            }
-        }
+        AuthorizationUtils.setAuthentication(authenticationToken);
+     
+        return authenticationToken;
     }
     
-    /**
-     * mobile validate.
-     * 
-     * @param otpCaptcha String
-     * @param authType   String
-     * @param userInfo   UserInfo
-     */
-    protected void mobilecaptchaValid(String password, String authType, UserInfo userInfo) {
-        // for mobile password
-        if (applicationConfig.getLoginConfig().isMfa() 
-        		&& authType.equalsIgnoreCase(AuthType.MOBILE)) {
-            UserInfo validUserInfo = new UserInfo();
-            validUserInfo.setUsername(userInfo.getUsername());
-            validUserInfo.setId(userInfo.getId());
-            AbstractOtpAuthn smsOtpAuthn = otpAuthnService.getByInstId(userInfo.getInstId());
-            if (password == null || !smsOtpAuthn.validate(validUserInfo, password)) {
-                String message = WebContext.getI18nValue("login.error.captcha");
-                _logger.debug("login captcha valid error.");
-                throw new BadCredentialsException(message);
-            }
-        }
-    }
-
     /**
      * login user by j_username and j_cname first query user by j_cname if first
      * step userinfo is null,query user from system.
@@ -363,29 +244,5 @@ public abstract class AbstractAuthenticationProvider {
         }
         return true;
     }
-
-    public void setApplicationConfig(ApplicationConfig applicationConfig) {
-        this.applicationConfig = applicationConfig;
-    }
-
-    public void setAuthenticationRealm(AbstractAuthenticationRealm authenticationRealm) {
-        this.authenticationRealm = authenticationRealm;
-    }
-
-    public void setTfaOtpAuthn(AbstractOtpAuthn tfaOtpAuthn) {
-        this.tfaOtpAuthn = tfaOtpAuthn;
-    }
-
-    public void setRemeberMeService(AbstractRemeberMeService remeberMeService) {
-        this.remeberMeService = remeberMeService;
-    }
-
-    public void setOnlineTicketServices(OnlineTicketServices onlineTicketServices) {
-        this.onlineTicketServices = onlineTicketServices;
-    }
-
-	public void setOtpAuthnService(OtpAuthnService otpAuthnService) {
-		this.otpAuthnService = otpAuthnService;
-	}
 
 }

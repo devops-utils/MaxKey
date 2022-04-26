@@ -25,6 +25,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.maxkey.authn.AbstractAuthenticationProvider;
 import org.maxkey.authn.LoginCredential;
+import org.maxkey.authn.web.AuthorizationUtils;
 import org.maxkey.authz.cas.endpoint.response.ServiceResponseBuilder;
 import org.maxkey.authz.cas.endpoint.ticket.CasConstants;
 import org.maxkey.authz.cas.endpoint.ticket.ServiceTicketImpl;
@@ -33,7 +34,6 @@ import org.maxkey.entity.UserInfo;
 import org.maxkey.entity.apps.AppsCasDetails;
 import org.maxkey.util.StringUtils;
 import org.maxkey.web.HttpResponseConstants;
-import org.maxkey.web.WebContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -83,9 +83,9 @@ public class CasRestV1Endpoint  extends CasBaseAuthorizeEndpoint{
     	    
     	    LoginCredential loginCredential =new LoginCredential(username,password,"CASREST");
     	    
-    	    authenticationProvider.authentication(loginCredential,false);
+    	    authenticationProvider.authenticate(loginCredential,false);
             
-            TicketGrantingTicketImpl ticketGrantingTicket=new TicketGrantingTicketImpl("Random",WebContext.getAuthentication(),null);
+            TicketGrantingTicketImpl ticketGrantingTicket=new TicketGrantingTicketImpl("Random",AuthorizationUtils.getAuthentication(),null);
             
             String ticket=casTicketGrantingTicketServices.createTicket(ticketGrantingTicket);
             String location = applicationConfig.getServerPrefix()+CasConstants.ENDPOINT.ENDPOINT_REST_TICKET_V1 +"/" + ticket;
@@ -187,9 +187,9 @@ public class CasRestV1Endpoint  extends CasBaseAuthorizeEndpoint{
             
             LoginCredential loginCredential =new LoginCredential(username,password,"CASREST");
             
-            authenticationProvider.authentication(loginCredential,false);
-            UserInfo userInfo =WebContext.getUserInfo();
-            TicketGrantingTicketImpl ticketGrantingTicket=new TicketGrantingTicketImpl("Random",WebContext.getAuthentication(),null);
+            authenticationProvider.authenticate(loginCredential,false);
+            UserInfo userInfo = AuthorizationUtils.getUserInfo();
+            TicketGrantingTicketImpl ticketGrantingTicket=new TicketGrantingTicketImpl("Random",AuthorizationUtils.getAuthentication(),null);
             
             String ticket=casTicketGrantingTicketServices.createTicket(ticketGrantingTicket);
             String location = applicationConfig.getServerPrefix() + CasConstants.ENDPOINT.ENDPOINT_REST_TICKET_V1 + ticket;

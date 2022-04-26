@@ -1,5 +1,5 @@
 /*
- * Copyright [2020] [MaxKey of copyright http://www.maxkey.top]
+ * Copyright [2022] [MaxKey of copyright http://www.maxkey.top]
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,11 +29,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.LogFactory;
 import org.maxkey.configuration.ApplicationConfig;
 import org.maxkey.entity.Institutions;
-import org.maxkey.entity.UserInfo;
 import org.maxkey.util.DateUtils;
 import org.maxkey.util.IdGenerator;
 import org.maxkey.web.message.Message;
@@ -42,7 +40,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.env.StandardEnvironment;
-import org.springframework.security.core.Authentication;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 import org.springframework.web.context.support.WebApplicationContextUtils;
@@ -84,7 +81,6 @@ public final class WebContext {
         
         sessionAttributeNameList.add(WebConstants.CURRENT_USER);
         sessionAttributeNameList.add(WebConstants.CURRENT_USER_PASSWORD_SET_TYPE);
-        sessionAttributeNameList.add(WebConstants.CURRENT_USER_SESSION_ID);
         
         sessionAttributeNameList.add(WebConstants.CURRENT_INST);
         
@@ -100,44 +96,12 @@ public final class WebContext {
         
         logoutAttributeNameList.add(WebConstants.CURRENT_USER);
         logoutAttributeNameList.add(WebConstants.CURRENT_USER_PASSWORD_SET_TYPE);
-        logoutAttributeNameList.add(WebConstants.CURRENT_USER_SESSION_ID);
         
         
         logoutAttributeNameList.add(WebConstants.FIRST_SAVED_REQUEST_PARAMETER);
         
         logoutAttributeNameList.add(WebConstants.REMEBER_ME_SESSION);
         
-    }
-     
-    /**
-     * set Current login user to session.
-     * 
-     * @see WebConstants.CURRENT_USER
-     */
-    public static void setUserInfo(UserInfo userInfo) {
-        setAttribute(WebConstants.CURRENT_USER, userInfo);
-    }
-
-    /**
-     * get Current login user from session.
-     * 
-     * @see WebConstants.CURRENT_USER
-     * @return UserInfo
-     */
-    public static UserInfo getUserInfo() {
-        return ((UserInfo) getAttribute(WebConstants.CURRENT_USER));
-    }
-    
-    public static String getInst(HttpServletRequest request) {
-    	String instId = "1";
-    	//from session
-    	if(getAttribute(WebConstants.CURRENT_INST) != null) {
-    		instId = ((Institutions)request.getSession().getAttribute(WebConstants.CURRENT_INST)).getId();
-    	}else {
-    	//from cookie
-    		instId = WebContext.readCookieByName(request, WebConstants.INST_COOKIE_NAME).getValue();
-    	}
-        return StringUtils.isBlank(instId) ? "1" : instId;
     }
 
     /**
@@ -169,25 +133,7 @@ public final class WebContext {
         removeAttribute(WebConstants.CURRENT_MESSAGE);
     }
 
-    public static void setAuthentication(Authentication authentication) {
-        setAttribute(WebConstants.AUTHENTICATION, authentication);
-    }
 
-    public static Authentication getAuthentication() {
-        Authentication authentication = (Authentication) getAttribute(WebConstants.AUTHENTICATION);
-        return authentication;
-    }
-
-    /**
-     * isAuthenticated.
-     * @return isAuthenticated
-     */
-    public static boolean isAuthenticated() {
-        if (getUserInfo() != null) {
-            return true;
-        }
-        return false;
-    }
 
     /**
      * get ApplicationContext from web  ServletContext configuration
@@ -203,7 +149,7 @@ public final class WebContext {
      * @return Object
      */
     public static Object getBean(String name){
-        if(applicationContext==null) {
+        if(applicationContext == null) {
             return getApplicationContext().getBean(name);
         }else {
             return applicationContext.getBean(name);
@@ -364,6 +310,15 @@ public final class WebContext {
     public static String getParameter(String name) {
         return getRequest().getParameter(name);
     }
+    
+    public static Institutions getInst() {
+        return (Institutions)getAttribute(WebConstants.CURRENT_INST);
+    }
+    
+    public static String getBaseUri() {
+        return (String)getAttribute(WebConstants.FRONTEND_BASE_URI);
+    }
+    
 
     /**
      * encoding encodingString by ApplicationConfig.
@@ -415,8 +370,8 @@ public final class WebContext {
      * @param name  cookie名字
      * @return Cookie
      */
-    public static Cookie readCookieByName(HttpServletRequest request, String name) {
-        Map<String, Cookie> cookieMap = readCookieAll(request);
+    public static Cookie getCookie(HttpServletRequest request, String name) {
+        Map<String, Cookie> cookieMap = getCookieAll(request);
         if (cookieMap.containsKey(name)) {
             Cookie cookie = (Cookie) cookieMap.get(name);
             return cookie;
@@ -431,7 +386,7 @@ public final class WebContext {
      * @param request HttpServletRequest
      * @return Map 
      */
-    private static Map<String, Cookie> readCookieAll(HttpServletRequest request) {
+    private static Map<String, Cookie> getCookieAll(HttpServletRequest request) {
         Map<String, Cookie> cookieMap = new HashMap<String, Cookie>();
         Cookie[] cookies = request.getCookies();
         if (null != cookies) {

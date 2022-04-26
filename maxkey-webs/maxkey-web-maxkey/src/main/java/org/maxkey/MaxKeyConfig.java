@@ -1,5 +1,5 @@
 /*
- * Copyright [2020] [MaxKey of copyright http://www.maxkey.top]
+ * Copyright [2022] [MaxKey of copyright http://www.maxkey.top]
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,7 +28,6 @@ import org.maxkey.authn.realm.jdbc.JdbcAuthenticationRealm;
 import org.maxkey.authn.realm.ldap.LdapAuthenticationRealmService;
 import org.maxkey.authn.support.kerberos.KerberosProxy;
 import org.maxkey.authn.support.kerberos.RemoteKerberosService;
-import org.maxkey.authn.support.rememberme.AbstractRemeberMeService;
 import org.maxkey.configuration.EmailConfig;
 import org.maxkey.constants.ConstsPersistence;
 import org.maxkey.password.onetimepwd.AbstractOtpAuthn;
@@ -57,6 +56,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 
 @Configuration
 @ComponentScan(basePackages = {
+		"org.maxkey.authn",
         "org.maxkey.configuration",
         "org.maxkey.domain",
         "org.maxkey.domain.apps",
@@ -102,7 +102,6 @@ public class MaxKeyConfig  implements InitializingBean {
 	    		PasswordPolicyValidator passwordPolicyValidator,
 	    		LoginRepository loginService,
 	    		LoginHistoryRepository loginHistoryService,
-	    		AbstractRemeberMeService remeberMeService,
 	    		UserInfoService userInfoService,
                 JdbcTemplate jdbcTemplate,
                 OtpAuthnService otpAuthnService,
@@ -113,7 +112,6 @@ public class MaxKeyConfig  implements InitializingBean {
         		passwordPolicyValidator,
         		loginService,
         		loginHistoryService,
-        		remeberMeService,
         		userInfoService,
         		jdbcTemplate,
         		ldapRealmService

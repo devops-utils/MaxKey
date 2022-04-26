@@ -23,7 +23,6 @@ import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
-import org.maxkey.constants.ConstsStatus;
 import org.maxkey.entity.Institutions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,10 +36,9 @@ public class InstitutionsRepository {
     private static Logger _logger = LoggerFactory.getLogger(InstitutionsRepository.class);
     
     private static final String SELECT_STATEMENT = 
-    						"select * from  mxk_institutions where domain = ? and status = " + ConstsStatus.ACTIVE;
-
-    private static final String SELECT_STATEMENT_BY_ID = 
-    						"select * from  mxk_institutions where id = ? and status = " + ConstsStatus.ACTIVE;
+    						"select * from  mxk_institutions where id = ? or domain = ? " ;
+    
+    private static final String DEFAULT_INSTID = "1";
 
     protected static final Cache<String, Institutions> institutionsStore = 
             Caffeine.newBuilder()
@@ -55,39 +53,31 @@ public class InstitutionsRepository {
     public InstitutionsRepository(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
     }
-        
-    public Institutions findByDomain(String domain) {
-        _logger.trace(" domain {}" , domain);
-        Institutions inst = institutionsStore.getIfPresent(domain);
-        if(inst == null) {
-	        List<Institutions> institutions = 
-	        		jdbcTemplate.query(SELECT_STATEMENT,new InstitutionsRowMapper(),domain);
-	        
-	        if (institutions != null && institutions.size() > 0) {
-	        	inst = institutions.get(0);
-	        	institutionsStore.put(domain, inst);
-		        mapper.put(inst.getId(), domain);
-	        }else {
-	        	//default institution
-	        	inst = get("1"); 
-	        }
+    
+    public Institutions get(String instIdOrDomain) {
+        _logger.trace(" instId {}" , instIdOrDomain);
+        Institutions inst = getByInstIdOrDomain(instIdOrDomain);
+        if(inst == null) {//use default inst
+        	inst = getByInstIdOrDomain(DEFAULT_INSTID);
+        	institutionsStore.put(instIdOrDomain, inst);
         }
-        
         return inst;
     }
     
-    public Institutions get(String instId) {
-        _logger.trace(" instId {}" , instId);
-        Institutions inst = institutionsStore.getIfPresent(mapper.get(instId)==null ? "1" : mapper.get(instId) );
+    private Institutions getByInstIdOrDomain(String instIdOrDomain) {
+        _logger.trace(" instId {}" , instIdOrDomain);
+        Institutions inst = institutionsStore.getIfPresent(mapper.get(instIdOrDomain)==null ? DEFAULT_INSTID : mapper.get(instIdOrDomain) );
         if(inst == null) {
 	        List<Institutions> institutions = 
-	        		jdbcTemplate.query(SELECT_STATEMENT_BY_ID,new InstitutionsRowMapper(),instId);
+	        		jdbcTemplate.query(SELECT_STATEMENT,new InstitutionsRowMapper(),instIdOrDomain,instIdOrDomain);
 	        
 	        if (institutions != null && institutions.size() > 0) {
 	        	inst = institutions.get(0);
 	        }
-	        institutionsStore.put(inst.getDomain(), inst);
-	        mapper.put(inst.getId(), inst.getDomain());
+	        if(inst != null ) {
+		        institutionsStore.put(inst.getDomain(), inst);
+		        mapper.put(inst.getId(), inst.getDomain());
+	        }
         }
         
         return inst;
@@ -102,11 +92,11 @@ public class InstitutionsRepository {
         	institution.setFullName(rs.getString("fullname"));
         	institution.setLogo(rs.getString("logo"));
         	institution.setDomain(rs.getString("domain"));
-        	institution.setTitle(rs.getString("title"));
+        	institution.setFrontTitle(rs.getString("fronttitle"));
         	institution.setConsoleTitle(rs.getString("consoletitle"));
-        	institution.setCaptcha(rs.getString("captcha"));
-        	institution.setCaptchaSupport(rs.getString("CaptchaSupport"));
-        	institution.setDefaultUri(rs.getString("DefaultUri"));
+        	institution.setCaptchaType(rs.getString("captchatype"));
+        	institution.setCaptchaSupport(rs.getString("captchasupport"));
+        	institution.setDefaultUri(rs.getString("defaultUri"));
             return institution;
         }
     }
