@@ -21,6 +21,9 @@ cd docker
 cp -r ../build/MaxKey-v3.3.3GA docker-maxkey
 cp -r ../build/MaxKey-v3.3.3GA docker-maxkey-mgt
 
+cp -r ../build/MaxKey-v3.5.0GA docker-maxkey
+cp -r ../build/MaxKey-v3.5.0GA docker-maxkey-mgt
+
 sudo docker-compose up --build -d
 
 sudo docker-compose build
