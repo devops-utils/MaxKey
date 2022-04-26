@@ -1,5 +1,5 @@
 /*
- * Copyright [2020] [MaxKey of copyright http://www.maxkey.top]
+ * Copyright [2022] [MaxKey of copyright http://www.maxkey.top]
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,8 +31,6 @@ public class WebConstants {
 
     public static final  String CURRENT_USER = "current_user";
 
-    public static final  String CURRENT_USER_SESSION_ID = "current_user_session_id";
-
     public static final  String CURRENT_COMPANY = "current_user_company";
 
     public static final  String CURRENT_DEPARTMENT = "current_user_department";
@@ -51,6 +49,8 @@ public class WebConstants {
     public static final  String CURRENT_INST 		= "current_inst";
     
     public final static  String INST_COOKIE_NAME 	= "mxk_inst";
+    
+    public final static  String FRONTEND_BASE_URI 		= "mxk_frontend_base_uri";
 
     // SPRING_SECURITY_SAVED_REQUEST
     public static final  String FIRST_SAVED_REQUEST_PARAMETER 

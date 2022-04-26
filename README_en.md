@@ -80,7 +80,7 @@ Code Hosting <a href="https://github.com/dromara/MaxKey" target="_blank"><b>GitH
 
 7. The platform independence and diversity of environment. It supports web, mobile phone, mobile devices, such as apple IOS, Android, etc., and covers the certification ability from B/S to mobile applications.
 
-8. Based on Java EE platform , microservice architecture, Use Spring, MySQL, Tomcat, Redis , Kafka , RocketMQ and other open source technologies, and has strong scalability.
+8. Based on Java EE platform , microservice architecture, Use Spring, MySQL, Tomcat, Redis , MQ and other open source technologies, and has strong scalability.
 
 9. Open Source, Secure,  Independent and Controllable , License Under Apache 2.0 License & <a href="https://maxkey.top/zh/about/licenses.html" target="_blank">MaxKey copyright</a>. 
 
@@ -120,11 +120,10 @@ Download the current version from Baidu Pan,<a href="https://maxkey.top/zh/about
 
 | No.     | Plan    |  Date   |
 | --------| :-----  | :----  |
-| 1     | Ant Design of Angular                                     |  2022Q2  |
-| 2     | Java 17+                                                  |  2022Q4  |
-| 3     | Jakarta EE 9+                                             |  2022Q4  |
-| 4     | Spring Framework 6                                        |  2022Q4  |
-| 5     | Spring Boot 3                                             |  2022Q4  |
+| 1     | Java 17+                                                  |  2022Q4  |
+| 2     | Jakarta EE 9+                                             |  2022Q4  |
+| 3     | Spring Framework 6                                        |  2022Q4  |
+| 4     | Spring Boot 3                                             |  2022Q4  |
 
 
 # User Registration
@@ -159,7 +158,6 @@ Download the current version from Baidu Pan,<a href="https://maxkey.top/zh/about
 | 企业    | 山东港口陆海国际物流集团有限公司            |
 | 企业    | 广州无线电集团                              |
 | 企业    | 河南新辰环保科技有限公司                    |
-| 企业    | 中车南京浦镇车辆有限公司                    |
 | 企业    | 三一华兴                                    |
 | 企业    | unicon.net                                  |
 | 企业    | 深圳市东阳光实业发展有限公司                |

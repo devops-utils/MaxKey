@@ -53,7 +53,7 @@ def libjarsmapper=[
     'maxkey-synchronizer-dingtalk'          :'maxkey_mgt',
     'maxkey-synchronizer-workweixin'        :'maxkey_mgt',
 	'maxkey-synchronizer-reorgdept'         :'maxkey_mgt',
-    'maxkey-boot-monitor'                   :'maxkey_monitor'
+    'maxkey-monitor'                        :'maxkey_monitor'
 ]
 
 configurations.all {
@@ -78,12 +78,12 @@ allprojects {
     compileJava.options.encoding = 'UTF-8'
     
     eclipse {
-       /* 第一次时请注释这段eclipse设置，可能报错，设置工程字符集
+       /* 第一次时请注释这段eclipse设置，可能报错，设置工程字符集*/
         jdt  {
             File f = file('.settings/org.eclipse.core.resources.prefs')
             f.write('eclipse.preferences.version=1\n')
             f.append('encoding/<project>=UTF-8') //use UTF-8
-        }*/
+        }
     }
     
 
@@ -510,7 +510,7 @@ project('maxkey-common')  {
 }
 
 //copy Dep Jars to /build/maxkey-depjars,only maxkey-boot-monitor deps
-project('maxkey-webs:maxkey-boot-monitor')  {
+project('maxkey-monitor')  {
     task copyDepJars(type:Copy) {
         dependsOn   assemble
         //项目名 项目所在的group version 版本号

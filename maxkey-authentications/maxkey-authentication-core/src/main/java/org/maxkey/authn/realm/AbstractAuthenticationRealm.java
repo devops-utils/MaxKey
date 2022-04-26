@@ -20,10 +20,9 @@ package org.maxkey.authn.realm;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import javax.servlet.http.HttpServletResponse;
 
+import org.maxkey.authn.SigninPrincipal;
 import org.maxkey.authn.realm.ldap.LdapAuthenticationRealmService;
-import org.maxkey.authn.support.rememberme.AbstractRemeberMeService;
 import org.maxkey.entity.Groups;
 import org.maxkey.entity.HistoryLogin;
 import org.maxkey.entity.UserInfo;
@@ -38,6 +37,7 @@ import org.maxkey.web.ipregion.IpRegionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 
 /**
@@ -55,8 +55,6 @@ public abstract class AbstractAuthenticationRealm {
     protected LoginRepository loginRepository;
 
     protected LoginHistoryRepository loginHistoryRepository;
-
-    protected AbstractRemeberMeService remeberMeService;
     
     protected UserInfoService userInfoService;
     
@@ -88,16 +86,6 @@ public abstract class AbstractAuthenticationRealm {
 
     public abstract boolean passwordMatches(UserInfo userInfo, String password);
     
-
-    public static boolean isAuthenticated() {
-        if (WebContext.getUserInfo() != null) {
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-
     public List<Groups> queryGroups(UserInfo userInfo) {
        return loginRepository.queryGroups(userInfo);
     }
@@ -135,9 +123,10 @@ public abstract class AbstractAuthenticationRealm {
         HistoryLogin historyLogin = new HistoryLogin();
         historyLogin.setSessionId(WebContext.genId());
         historyLogin.setSessionStatus(7);
-        if(WebContext.getAttribute(WebConstants.CURRENT_USER_SESSION_ID) != null) {
-            historyLogin.setSessionStatus(1);
-            historyLogin.setSessionId(WebContext.getAttribute(WebConstants.CURRENT_USER_SESSION_ID).toString());
+        Authentication  authentication  = (Authentication ) WebContext.getAttribute(WebConstants.AUTHENTICATION);
+        if(authentication.getPrincipal() instanceof SigninPrincipal) {
+        	  historyLogin.setSessionStatus(1);
+              historyLogin.setSessionId(userInfo.getOnlineTicket());
         }
         
         _logger.debug("user session id is {} . ",historyLogin.getSessionId());
@@ -167,35 +156,6 @@ public abstract class AbstractAuthenticationRealm {
 
         return true;
     }
-
-    /**
-     * logout user and remove RemeberMe token 
-     * @param response
-     * @return
-     */
-    public boolean logout(HttpServletResponse response) {
-        if (isAuthenticated()) {
-            Object sessionIdAttribute = WebContext.getAttribute(WebConstants.CURRENT_USER_SESSION_ID);
-            UserInfo userInfo = WebContext.getUserInfo();
-            userInfo.setLastLogoffTime(DateUtils.formatDateTime(new Date()));
-            
-            if (sessionIdAttribute != null) {
-                remeberMeService.removeRemeberMe(response);
-
-                loginHistoryRepository.logoff(userInfo.getLastLogoffTime(), sessionIdAttribute.toString());
-            }
-            
-            loginRepository.updateLastLogoff(userInfo);
-            
-            _logger.debug("Session " + WebContext.getAttribute(WebConstants.CURRENT_USER_SESSION_ID) + ", user "
-                    + userInfo.getUsername() + " Logout, datetime " + userInfo.getLastLogoffTime() + " .");
-          //remove login user session id
-            WebContext.removeAttribute(WebConstants.CURRENT_USER_SESSION_ID);
-        }
-        return true;
-
-    }
-    
     
     public Browser  resolveBrowser() {
         Browser browser =new Browser();

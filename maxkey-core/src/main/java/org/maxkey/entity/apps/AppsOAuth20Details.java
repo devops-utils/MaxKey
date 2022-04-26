@@ -106,14 +106,19 @@ public class AppsOAuth20Details extends Apps {
         this.setAdapter(application.getAdapter());
         this.setAdapterId(application.getAdapterId());
         this.setAdapterName(application.getAdapterName());
+        this.setFrequently(application.getFrequently());
         
         this.clientSecret = baseClientDetails.getClientSecret();
-        this.scope = baseClientDetails.getScope().toString();
-        this.resourceIds = baseClientDetails.getResourceIds().toString();
-        this.authorizedGrantTypes = baseClientDetails.getAuthorizedGrantTypes().toString();
+        this.scope = StringUtils
+                .collectionToCommaDelimitedString(baseClientDetails.getScope());
+        this.resourceIds = StringUtils
+                .collectionToCommaDelimitedString(baseClientDetails.getResourceIds());
+        this.authorizedGrantTypes = StringUtils
+                .collectionToCommaDelimitedString(baseClientDetails.getAuthorizedGrantTypes());
         this.registeredRedirectUris = StringUtils
                 .collectionToCommaDelimitedString(baseClientDetails.getRegisteredRedirectUri());
-        this.authorities = baseClientDetails.getAuthorities().toString();
+        this.authorities = StringUtils
+                .collectionToCommaDelimitedString(baseClientDetails.getAuthorities());
         this.accessTokenValiditySeconds = baseClientDetails.getAccessTokenValiditySeconds();
         this.refreshTokenValiditySeconds = baseClientDetails.getRefreshTokenValiditySeconds();
         this.approvalPrompt = baseClientDetails.isAutoApprove("all") + "";

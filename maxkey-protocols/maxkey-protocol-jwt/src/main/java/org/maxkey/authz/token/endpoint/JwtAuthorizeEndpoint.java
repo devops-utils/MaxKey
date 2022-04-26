@@ -1,5 +1,5 @@
 /*
- * Copyright [2020] [MaxKey of copyright http://www.maxkey.top]
+ * Copyright [2022] [MaxKey of copyright http://www.maxkey.top]
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,7 +27,9 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.maxkey.authn.SigninPrincipal;
+import org.apache.mybatis.jpa.util.JpaWebContext;
+import org.maxkey.authn.annotation.CurrentUser;
+import org.maxkey.authn.web.AuthorizationUtils;
 import org.maxkey.authz.endpoint.AuthorizeBaseEndpoint;
 import org.maxkey.authz.endpoint.adapter.AbstractAuthorizeAdapter;
 import org.maxkey.authz.jwt.endpoint.adapter.JwtAdapter;
@@ -35,6 +37,7 @@ import org.maxkey.configuration.ApplicationConfig;
 import org.maxkey.constants.ConstsBoolean;
 import org.maxkey.constants.ContentType;
 import org.maxkey.crypto.jose.keystore.JWKSetKeyStore;
+import org.maxkey.entity.UserInfo;
 import org.maxkey.entity.apps.Apps;
 import org.maxkey.entity.apps.AppsJwtDetails;
 import org.maxkey.persistence.service.AppsJwtDetailsService;
@@ -76,7 +79,8 @@ public class JwtAuthorizeEndpoint  extends AuthorizeBaseEndpoint{
 	public ModelAndView authorize(
 			HttpServletRequest request,
 			HttpServletResponse response,
-			@PathVariable("id") String id){
+			@PathVariable("id") String id,
+			@CurrentUser UserInfo currentUser){
 		ModelAndView modelAndView=new ModelAndView();
 		Apps  application = getApp(id);
 		AppsJwtDetails jwtDetails = jwtDetailsService.getAppDetails(id , true);
@@ -98,8 +102,7 @@ public class JwtAuthorizeEndpoint  extends AuthorizeBaseEndpoint{
 			adapter = (AbstractAuthorizeAdapter)jwtAdapter;
 		}
 		
-		adapter.setAuthentication((SigninPrincipal)WebContext.getAuthentication().getPrincipal());
-		adapter.setUserInfo(WebContext.getUserInfo());
+		adapter.setPrincipal(AuthorizationUtils.getPrincipal());
 		
 		adapter.generateInfo();
 		//sign
@@ -170,6 +173,6 @@ public class JwtAuthorizeEndpoint  extends AuthorizeBaseEndpoint{
 			return jwkSetKeyStore.toString(mediaType);
 			
 		}
-		return appId + " not exist.";
+		return appId + " not exist. \n" + JpaWebContext.version();
 	}
 }

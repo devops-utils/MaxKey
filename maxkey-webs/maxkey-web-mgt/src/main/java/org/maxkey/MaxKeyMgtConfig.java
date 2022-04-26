@@ -1,5 +1,5 @@
 /*
- * Copyright [2020] [MaxKey of copyright http://www.maxkey.top]
+ * Copyright [2022] [MaxKey of copyright http://www.maxkey.top]
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,6 @@ import org.maxkey.persistence.repository.LoginRepository;
 import org.maxkey.persistence.repository.PasswordPolicyValidator;
 import org.maxkey.persistence.service.UserInfoService;
 import org.maxkey.authn.realm.jdbc.JdbcAuthenticationRealm;
-import org.maxkey.authn.support.rememberme.AbstractRemeberMeService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
@@ -44,7 +43,6 @@ public class MaxKeyMgtConfig  implements InitializingBean {
 	    		PasswordPolicyValidator passwordPolicyValidator,
 	    		LoginRepository loginRepository,
 	    		LoginHistoryRepository loginHistoryRepository,
-	    		AbstractRemeberMeService remeberMeService,
 	    		UserInfoService userInfoService,
              JdbcTemplate jdbcTemplate) {
 		
@@ -53,7 +51,6 @@ public class MaxKeyMgtConfig  implements InitializingBean {
         		passwordPolicyValidator,
         		loginRepository,
         		loginHistoryRepository,
-        		remeberMeService,
         		userInfoService,
         		jdbcTemplate);
         
