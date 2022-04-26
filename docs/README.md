@@ -4,6 +4,19 @@ https://services.gradle.org/distributions/gradle-7.2-bin.zip
 unzip gradle-7.2-bin.zip
 ~/git/gradle-7.2/bin/gradle build -x test
 
+cd maxkey-web-frontend
+sudo docker run -ti --privileged --volume="$(pwd)":/maxkey-web-frontend -v "$(pwd)"/root:/root --rm node:14 bash
+cd /maxkey-web-frontend
+npm install -g cnpm --registry=https://registry.npm.taobao.org
+cd maxkey-web-app
+cnpm install
+# npm install
+npm run build
+cd ../maxkey-web-mgt-app
+cnpm install
+# npm install
+npm run build
+
 cd docker
 cp -r ../build/MaxKey-v3.3.3GA docker-maxkey
 cp -r ../build/MaxKey-v3.3.3GA docker-maxkey-mgt
