@@ -27,7 +27,7 @@ services:
       - DATABASE_USER:root
       - DATABASE_PWD:maxkey
     ports:
-      - "8073:443"
+      - "8092:443"
 
   maxkey-mgt:
     image: maxkey:maxkey-mgt
@@ -40,4 +40,4 @@ services:
       - DATABASE_USER:root
       - DATABASE_PWD:maxkey
     ports:
-      - "8072:9527"
+      - "8091:9527"
