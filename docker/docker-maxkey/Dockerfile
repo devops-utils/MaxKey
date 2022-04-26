@@ -1,7 +1,7 @@
 FROM openjdk:8-jre
 
 WORKDIR /home/sso
-COPY MaxKey-v3.5.0GA .
+COPY MaxKey-v3.3.3GA .
 COPY bin .
 
 RUN chmod +x *.sh
