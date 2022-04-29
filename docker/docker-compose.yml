@@ -40,4 +40,4 @@ services:
       - DATABASE_USER:root
       - DATABASE_PWD:maxkey
     ports:
-      - "8091:9527"
+      - "8093:9527"
